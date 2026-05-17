@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface-2: #e8e8e8;
+  --surface-3: #d8d8d8;
+  --text: #0a0a0a;
+  --text-muted: #5a5a6a;
+  --accent: #f5a623;
+  --accent-hover: #e09310;
+  --border: #d0d4dc;
+  --navy: #0d1b35;
+  --column-bg: #dde1e7;
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #c0c4cc;
+  --shadow: rgba(0,0,0,0.1);
+}
+
+.dark {
+  --bg: #0a0a0a;
+  --surface: #0d1b35;
+  --surface-2: #1a2a4a;
+  --surface-3: #2a3a5a;
+  --text: #f0f0f0;
+  --text-muted: #9aabb8;
+  --accent: #f5a623;
+  --accent-hover: #e09310;
+  --border: #2a3a5a;
+  --navy: #0d1b35;
+  --column-bg: #1a2a4a;
+  --card-bg: #0d2248;
+  --input-bg: #1a2a4a;
+  --input-border: #2a3a5a;
+  --shadow: rgba(0,0,0,0.4);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+input, textarea, select {
+  background-color: var(--input-bg);
+  color: var(--text);
+  border-color: var(--input-border);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
