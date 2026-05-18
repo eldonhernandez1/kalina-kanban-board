@@ -10,11 +10,15 @@ npm run build    # Production build
 npm run start    # Run production build
 ```
 
-No test suite is configured.
+No test suite is configured. Type-check with:
+
+```bash
+npx tsc --noEmit
+```
 
 ## Architecture
 
-**Monolithic Next.js 16 App Router** with a SQLite database. No external services.
+**Monolithic Next.js 16 App Router** with a SQLite database. No external services. Requires **React 19** — Next.js 16 dropped React 18 support and the async Server Component types don't exist in `@types/react@18`.
 
 ### Database
 
@@ -24,6 +28,8 @@ No test suite is configured.
 - Schema is initialized in `src/lib/db.ts` via `client.executeMultiple()` on module load
 - All DB access goes through `getDb()` which awaits the init promise before returning the client
 - API is fully async — use `await db.execute({ sql, args })` everywhere
+
+**Critical**: `@libsql/client` returns every SQLite integer column as JavaScript `bigint`. `bigint` cannot cross the React Server→Client serialization boundary and will throw at the `return <ClientComponent />` line. Always convert rows through the helpers in `src/lib/rows.ts` (`toProject`, `toStage`, `toCard`, `toComment`) before passing data to client components or returning from API routes. Never use `as unknown as T[]` casts on raw rows.
 
 ### Data model
 
