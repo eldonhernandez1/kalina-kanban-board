@@ -2,13 +2,22 @@ import { createClient } from '@libsql/client';
 import path from 'path';
 import fs from 'fs';
 
-const dataDir = path.join(process.cwd(), 'data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+function makeClient() {
+  if (process.env.TURSO_DATABASE_URL) {
+    return createClient({
+      url: process.env.TURSO_DATABASE_URL,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+  }
+  const dataDir = path.join(process.cwd(), 'data');
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  const dbPath = path.join(dataDir, 'kanban.db').replace(/\\/g, '/');
+  return createClient({ url: `file:${dbPath}` });
 }
 
-const dbPath = path.join(dataDir, 'kanban.db').replace(/\\/g, '/');
-export const client = createClient({ url: `file:${dbPath}` });
+export const client = makeClient();
 
 const initPromise = (async () => {
   await client.executeMultiple(`
