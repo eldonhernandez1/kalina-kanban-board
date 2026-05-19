@@ -26,6 +26,11 @@ export default function KanbanBoard({ project, initialStages, initialCards }: Ka
     return map;
   });
 
+  const [projectName, setProjectName] = useState(project.name);
+  const [editingProjectName, setEditingProjectName] = useState(false);
+  const [projectNameDraft, setProjectNameDraft] = useState('');
+  const projectNameInputRef = useRef<HTMLInputElement>(null);
+
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [editingStageId, setEditingStageId] = useState<number | null>(null);
   const [stageNameDraft, setStageNameDraft] = useState('');
@@ -41,6 +46,10 @@ export default function KanbanBoard({ project, initialStages, initialCards }: Ka
   const router = useRouter();
 
   useEffect(() => {
+    if (editingProjectName && projectNameInputRef.current) projectNameInputRef.current.focus();
+  }, [editingProjectName]);
+
+  useEffect(() => {
     if (editingStageId !== null && stageInputRef.current) stageInputRef.current.focus();
   }, [editingStageId]);
 
@@ -51,6 +60,18 @@ export default function KanbanBoard({ project, initialStages, initialCards }: Ka
   useEffect(() => {
     if (showAddStage && addStageRef.current) addStageRef.current.focus();
   }, [showAddStage]);
+
+  const saveProjectName = async () => {
+    const trimmed = projectNameDraft.trim();
+    setEditingProjectName(false);
+    if (!trimmed || trimmed === projectName) return;
+    const res = await fetch(`/api/projects/${project.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: trimmed }),
+    });
+    if (res.ok) setProjectName(trimmed);
+  };
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination, draggableId } = result;
@@ -202,9 +223,36 @@ export default function KanbanBoard({ project, initialStages, initialCards }: Ka
             Projects
           </button>
           <span style={{ color: 'rgba(255,255,255,0.3)' }}>/</span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 group">
             <div className="w-5 h-5 rounded flex-shrink-0" style={{ background: project.color }} />
-            <span className="font-bold text-white">{project.name}</span>
+            {editingProjectName ? (
+              <input
+                ref={projectNameInputRef}
+                value={projectNameDraft}
+                onChange={e => setProjectNameDraft(e.target.value)}
+                onBlur={saveProjectName}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') saveProjectName();
+                  if (e.key === 'Escape') setEditingProjectName(false);
+                }}
+                className="font-bold text-white bg-transparent border-b-2 outline-none"
+                style={{ borderColor: '#f5a623', minWidth: '8ch', width: `${Math.max(8, projectNameDraft.length + 1)}ch` }}
+              />
+            ) : (
+              <>
+                <span className="font-bold text-white">{projectName}</span>
+                <button
+                  onClick={() => { setProjectNameDraft(projectName); setEditingProjectName(true); }}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 rounded flex items-center justify-center hover:bg-white/10"
+                  style={{ color: 'rgba(255,255,255,0.6)' }}
+                  title="Rename project"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+              </>
+            )}
           </div>
           <div className="ml-auto flex items-center gap-3">
             <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: 'rgba(245,166,35,0.2)', color: '#f5a623' }}>
